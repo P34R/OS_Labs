@@ -8,15 +8,18 @@
 // Created by Alexander Reeder, 2001 January 06
 
 import java.io.*;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 public class MyScheduling {
-
+  private static int id=0;
   private static int processnum = 5;
   private static int quantum = 100;
   private static int runtime = 1000;
-  private static Vector<MysProcess> processVector = new Vector<>();
+  private static int ioblocked=600;
+  private static ArrayDeque<MysProcess> processQueue = new ArrayDeque<>();
   private static Results result = new Results("null","null",0);
   private static String resultsFile = "Summary-Results";
 
@@ -39,12 +42,17 @@ public class MyScheduling {
           st.nextToken();
           quantum = Common.s2i(st.nextToken());
         }
+        if (line.startsWith("io")){
+          StringTokenizer st = new StringTokenizer(line);
+          st.nextToken();
+          ioblocked = Common.s2i(st.nextToken());
+        }
         if (line.startsWith("process")) {
           StringTokenizer st = new StringTokenizer(line);
           st.nextToken();
           cputime = Common.s2i(st.nextToken());
           if (cputime >0)
-            processVector.addElement(new MysProcess(cputime, 0, 0, 0));
+            processQueue.addLast(new MysProcess(cputime, 0,ioblocked, 0, 0,processQueue.size()));
           else {
             System.out.println("Error, cputime of process should be >0");
             return;
@@ -62,25 +70,24 @@ public class MyScheduling {
 
   private static void debug() {
     int i = 0;
-
     System.out.println("processnum " + processnum);
     System.out.println("quantum " + quantum);
-    int size = processVector.size();
-    for (i = 0; i < size; i++) {
-      MysProcess process = processVector.elementAt(i);
-      System.out.println("process " + i + " " + process.cputime + " " + " " + process.cpudone + " " + process.numblocked);
+    int size = processQueue.size();
+    for (MysProcess process : processQueue) {
+      System.out.println("process " + process.id + " " + process.cputime + " " + " " + process.cpudone +" "+ process.ioblocking + " " + process.numblocked);
     }
     System.out.println("runtime " + runtime);
   }
 
   public static void main(String[] args) {
-    int i = 0;
-
+    int i=0;
     if (args.length != 1) {
       System.out.println("Usage: 'java Scheduling <INIT FILE>'");
       System.exit(-1);
     }
     File f = new File(args[0]);
+    //File f=new File("Simulator\\Myscheduling.conf");
+    System.out.println(f.getAbsolutePath());
     if (!(f.exists())) {
       System.out.println("Scheduling: error, file '" + f.getName() + "' does not exist.");
       System.exit(-1);
@@ -91,15 +98,17 @@ public class MyScheduling {
     }
     System.out.println("Working...");
     Init(args[0]);
-    if (processVector.size() < processnum) {
-      i = 0;
-      while (processVector.size() < processnum) {
-        int cputime = processVector.elementAt(i).cputime;
-        processVector.addElement(new MysProcess(cputime,0,0,0));
-        i++;
+    //Init("Simulator\\Myscheduling.conf");
+    if (processQueue.size() < processnum) {
+      Iterator<MysProcess> it=processQueue.iterator();
+      while (processQueue.size() < processnum) {
+        int cputime = 300;
+        if (it.hasNext())
+          cputime = it.next().cputime;
+        processQueue.add(new MysProcess(cputime,0,0,0,0,processQueue.size()));
       }
     }
-    result = MySchedulingAlgorithm.run(runtime, processVector, result,quantum);
+    result = MySchedulingAlgorithm.run(runtime, processQueue, result,quantum);
     try {
       //BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile));
       PrintStream out = new PrintStream(new FileOutputStream(resultsFile));
@@ -107,16 +116,17 @@ public class MyScheduling {
       out.println("Scheduling Name: " + result.schedulingName);
       out.println("Simulation Run Time: " + result.compuTime);
       out.println("Quantum: " + quantum);
-      out.println("Process #\tCPU Time\tQuantum\tCPU Completed\tCPU Blocked");
-      for (i = 0; i < processVector.size(); i++) {
-        MysProcess process = processVector.elementAt(i);
-        out.print(Integer.toString(i));
+      out.println("Process #\tCPU Time\tQuantum\tIO Blocking\tCPU Completed\tCPU Blocked");
+      for (MysProcess process: processQueue) {
+        out.print(Integer.toString(process.id));
         if (i < 100) { out.print("\t\t"); } else { out.print("\t"); }
         out.print(Integer.toString(process.cputime));
         if (process.cputime < 100) { out.print(" (ms)\t\t"); } else { out.print(" (ms)\t"); }
         out.print(Integer.toString(quantum));
         if (quantum < 100) { out.print(" (ms)\t\t"); } else { out.print(" (ms)\t"); }
         out.print(Integer.toString(process.cpudone));
+        if (process.ioblocking<100){out.print(" (ms)\t\t");} else {out.print(" (ms)\t");}
+        out.print(Integer.toString(process.ioblocking));
         if (process.cpudone < 100) { out.print(" (ms)\t\t"); } else { out.print(" (ms)\t"); }
         out.println(process.numblocked + " times");
       }

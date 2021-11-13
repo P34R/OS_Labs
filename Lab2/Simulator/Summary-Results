@@ -2,7 +2,4 @@ Scheduling Type: Preemptive
 Scheduling Name: Round-Robin
 Simulation Run Time: 2800
 Quantum: 50
-Process #	CPU Time	Quantum	CPU Completed	CPU Blocked
-0		980 (ms)	50 (ms)		980 (ms)	19 times
-1		580 (ms)	50 (ms)		580 (ms)	11 times
-2		1240 (ms)	50 (ms)		1240 (ms)	24 times
+Process #	CPU Time	Quantum	IO Blocking	CPU Completed	CPU Blocked
