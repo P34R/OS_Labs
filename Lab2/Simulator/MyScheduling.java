@@ -8,10 +8,8 @@
 // Created by Alexander Reeder, 2001 January 06
 
 import java.io.*;
-import java.util.ArrayDeque;
-import java.util.Iterator;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class MyScheduling {
   private static int id=0;
@@ -97,7 +95,9 @@ public class MyScheduling {
       System.exit(-1);
     }
     System.out.println("Working...");
+
     Init(args[0]);
+
     //Init("Simulator\\Myscheduling.conf");
     if (processQueue.size() < processnum) {
       Iterator<MysProcess> it=processQueue.iterator();
@@ -108,6 +108,7 @@ public class MyScheduling {
         processQueue.add(new MysProcess(cputime,0,0,0,0,processQueue.size()));
       }
     }
+    ArrayDeque<MysProcess> processesCopy=processQueue.clone();
     result = MySchedulingAlgorithm.run(runtime, processQueue, result,quantum);
     try {
       //BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile));
@@ -117,7 +118,7 @@ public class MyScheduling {
       out.println("Simulation Run Time: " + result.compuTime);
       out.println("Quantum: " + quantum);
       out.println("Process #\tCPU Time\tQuantum\tIO Blocking\tCPU Completed\tCPU Blocked");
-      for (MysProcess process: processQueue) {
+      for (MysProcess process: processesCopy) {
         out.print(Integer.toString(process.id));
         if (i < 100) { out.print("\t\t"); } else { out.print("\t"); }
         out.print(Integer.toString(process.cputime));
@@ -129,6 +130,7 @@ public class MyScheduling {
         out.print(Integer.toString(process.ioblocking));
         if (process.cpudone < 100) { out.print(" (ms)\t\t"); } else { out.print(" (ms)\t"); }
         out.println(process.numblocked + " times");
+        i++;
       }
       out.close();
     } catch (IOException e) { System.out.println(e); }

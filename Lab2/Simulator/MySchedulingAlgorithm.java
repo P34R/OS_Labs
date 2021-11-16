@@ -17,6 +17,7 @@ public static Results run(int runtime, ArrayDeque<MysProcess> processQueue, Resu
     int size = processQueue.size();
     int currentProcessQuantum = 0;
     int completed = 0;
+    ArrayDeque<MysProcess> completedProcesses=new ArrayDeque<>();
     String resultsFile = "Summary-Processes";
 
     result.schedulingType = "Preemptive";
@@ -34,8 +35,10 @@ public static Results run(int runtime, ArrayDeque<MysProcess> processQueue, Resu
 
                     result.compuTime=comptime;
                     out.close();
+                    processQueue=completedProcesses;
                     return result;
                 }
+                completedProcesses.add(process);
                 process=processQueue.pollFirst();
                 currentProcessQuantum=0;
                 /*for (i=(currentProcess+1)%size;i<size;i++){
