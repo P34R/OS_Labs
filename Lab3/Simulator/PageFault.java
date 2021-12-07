@@ -63,6 +63,6 @@ public class PageFault {
       page.M = 0;
       page.physical = -1;
       queue.add(replacePage);
-      
+
    }
 }

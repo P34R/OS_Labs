@@ -495,6 +495,7 @@ public class Kernel extends Thread
 
   public void reset() {
     memVector.removeAllElements();
+    memQueue.clear();
     instructVector.removeAllElements();
     controlPanel.statusValueLabel.setText( "STOP" ) ;
     controlPanel.timeValueLabel.setText( "0" ) ;
