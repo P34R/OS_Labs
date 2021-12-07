@@ -1,0 +1,8 @@
+READ ac000 ... page fault
+WRITE b0000 ... page fault
+WRITE b4000 ... page fault
+WRITE bc000 ... page fault
+WRITE c0000 ... page fault
+WRITE c4000 ... page fault
+READ e0000 ... page fault
+WRITE d82e7 ... page fault
